@@ -1,0 +1,63 @@
+node_modules/
+.mona-dashboard/
+.mona-agents/
+.mona-audit-key
+*.log
+.env
+
+# mTLS private keys (DO NOT COMMIT)
+certs/*-key.pem
+certs/ca-cert.srl
+
+# Temp / scratch files
+tmp-*
+tmp/
+
+# Build artifacts
+lib/
+release/
+packages/
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# MySQL test dumps
+*.sql
+
+# Docker compose (local overrides)
+docker-compose.override.yml
+
+# Sync credentials (secrets live in .env only)
+mona-sync.config.json
+.mona-sync-state.json
+play/
+
+# Archived / internal (not part of the open-core release)
+agents/
+data/
+docs/
+scripts/
+workflows/
+certs/
+sql/
+lib/
+packages/
+VERSION_LOG.md
+
+# Internal build/deploy/licensing tooling — not for public distribution
+bin/lock-util.mjs
+bin/lock-generate.mjs
+bin/build-release.mjs
+bin/ftp-config.mjs
+bin/deploy.mjs
+bin/upload*.mjs
+mona-sync.cjs
+mona-sync.config.json

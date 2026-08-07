@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Marketplace — mona.expert</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .agents-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1.25rem;
+      margin-top: 1.5rem;
+    }
+
+    .agent-card {
+      background: var(--bg-card, #1c1e26);
+      border: 1px solid var(--border, #2e303a);
+      border-radius: 12px;
+      padding: 1.5rem;
+      transition: border-color 0.15s, transform 0.1s;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    .agent-card:hover {
+      border-color: var(--accent, #7c5cfc);
+      transform: translateY(-1px);
+    }
+
+    .agent-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.5rem;
+    }
+
+    .agent-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text, #e0e0e0);
+      margin: 0;
+    }
+    .agent-tagline {
+      color: var(--text-dim, #888);
+      font-size: 0.85rem;
+      margin: 0.15rem 0 0.5rem 0;
+    }
+
+    .agent-description {
+      color: var(--text-dim, #999);
+      font-size: 0.85rem;
+      line-height: 1.5;
+      flex: 1;
+      margin-bottom: 1rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.15rem 0.55rem;
+      border-radius: 6px;
+      font-size: 0.73rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .badge-provider {
+      background: rgba(124, 92, 252, 0.15);
+      color: #7c5cfc;
+      border: 1px solid rgba(124, 92, 252, 0.25);
+    }
+    .badge-installed {
+      background: rgba(0, 200, 83, 0.15);
+      color: #00c853;
+      border: 1px solid rgba(0, 200, 83, 0.25);
+    }
+    .badge-running {
+      background: rgba(0, 184, 212, 0.15);
+      color: #00b8d4;
+      border: 1px solid rgba(0, 184, 212, 0.3);
+      animation: pulse-status 1.5s ease-in-out infinite;
+    }
+    .badge-stopped {
+      background: rgba(255, 152, 0, 0.15);
+      color: #ff9800;
+      border: 1px solid rgba(255, 152, 0, 0.25);
+    }
+    .badge-error {
+      background: rgba(255, 23, 68, 0.15);
+      color: #ff1744;
+      border: 1px solid rgba(255, 23, 68, 0.25);
+    }
+    .badge-not-installed {
+      background: rgba(158, 158, 158, 0.12);
+      color: #9e9e9e;
+      border: 1px solid rgba(158, 158, 158, 0.2);
+    }
+    .badge-safety-green {
+      background: rgba(0, 200, 83, 0.12);
+      color: #00c853;
+    }
+    .badge-safety-amber {
+      background: rgba(255, 152, 0, 0.15);
+      color: #ff9800;
+    }
+    .badge-safety-red {
+      background: rgba(255, 23, 68, 0.15);
+      color: #ff1744;
+    }
+    .badge-safety-unknown {
+      background: rgba(158, 158, 158, 0.12);
+      color: #9e9e9e;
+    }
+
+    @keyframes pulse-status {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    .agent-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .agent-permissions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+      margin-bottom: 0.3rem;
+    }
+    .perm-tag {
+      font-size: 0.72rem;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.06);
+      color: var(--text-dim, #999);
+    }
+    .perm-tag.enabled {
+      color: #00c853;
+    }
+    .perm-tag.disabled {
+      color: #666;
+      text-decoration: line-through;
+    }
+
+    .agent-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+      margin: 0.5rem 0;
+    }
+    .tag {
+      font-size: 0.7rem;
+      padding: 0.1rem 0.45rem;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.05);
+      color: var(--text-dim, #888);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .agent-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border, #2e303a);
+    }
+
+    .btn {
+      padding: 0.4rem 1rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .btn-primary {
+      background: var(--accent, #7c5cfc);
+      color: #fff;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: #6a4be0;
+    }
+    .btn-danger {
+      background: rgba(255, 23, 68, 0.15);
+      color: #ff1744;
+      border-color: rgba(255, 23, 68, 0.3);
+    }
+    .btn-danger:hover:not(:disabled) {
+      background: rgba(255, 23, 68, 0.25);
+    }
+    .btn-outline {
+      background: transparent;
+      color: var(--text, #ccc);
+      border-color: var(--border, #2e303a);
+    }
+    .btn-outline:hover:not(:disabled) {
+      background: rgba(255,255,255,0.05);
+    }
+    .btn-start {
+      background: rgba(0, 200, 83, 0.15);
+      color: #00c853;
+      border-color: rgba(0, 200, 83, 0.3);
+    }
+    .btn-start:hover:not(:disabled) {
+      background: rgba(0, 200, 83, 0.25);
+    }
+    .btn-stop {
+      background: rgba(255, 152, 0, 0.15);
+      color: #ff9800;
+      border-color: rgba(255, 152, 0, 0.3);
+    }
+    .btn-stop:hover:not(:disabled) {
+      background: rgba(255, 152, 0, 0.25);
+    }
+    .btn-install {
+      background: rgba(0, 184, 212, 0.15);
+      color: #00b8d4;
+      border-color: rgba(0, 184, 212, 0.3);
+    }
+    .btn-install:hover:not(:disabled) {
+      background: rgba(0, 184, 212, 0.25);
+    }
+
+    .agent-actions .spacer {
+      flex: 1;
+    }
+
+    .provider-link {
+      color: var(--accent, #7c5cfc);
+      font-size: 0.8rem;
+      text-decoration: none;
+    }
+    .provider-link:hover {
+      text-decoration: underline;
+    }
+
+    .filters {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      flex-wrap: wrap;
+      margin: 1rem 0 0 0;
+    }
+    .filter-btn {
+      padding: 0.3rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      background: rgba(255,255,255,0.04);
+      color: var(--text-dim, #888);
+      border: 1px solid var(--border, #2e303a);
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+    .filter-btn.active {
+      background: var(--accent, #7c5cfc);
+      color: #fff;
+      border-color: var(--accent, #7c5cfc);
+    }
+    .filter-btn:hover:not(.active) {
+      background: rgba(255,255,255,0.08);
+    }
+
+    .summary-bar {
+      display: flex;
+      gap: 1.5rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border, #2e303a);
+      margin-bottom: 0.25rem;
+    }
+    .summary-stat {
+      font-size: 0.8rem;
+    }
+    .summary-stat strong {
+      color: var(--text, #e0e0e0);
+      font-size: 0.9rem;
+    }
+    .summary-stat span {
+      color: var(--text-dim, #888);
+    }
+
+    .loading-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-dim, #888);
+    }
+    .loading-state .spinner {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--border, #2e303a);
+      border-top-color: var(--accent, #7c5cfc);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 0.75rem;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-dim, #888);
+    }
+    .empty-state .icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
+      background: #1c1e26;
+      border: 1px solid var(--border, #2e303a);
+      color: var(--text, #e0e0e0);
+      font-size: 0.85rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      z-index: 100;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.2s, transform 0.2s;
+      pointer-events: none;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .toast.error {
+      border-color: rgba(255,23,68,0.4);
+    }
+    .toast.success {
+      border-color: rgba(0,200,83,0.4);
+    }
+  </style>
+</head>
+<body>
+<!-- mona.expert inline icon sprite — paste right after <body>. Zero HTTP requests, currentColor themeable. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+    <symbol id="i-unlock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></symbol>
+    <symbol id="i-clipboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></symbol>
+    <symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.5-1.5 3-3.4 3-5.5A5.5 5.5 0 0 0 12 5 5.5 5.5 0 0 0 2 8.5c0 2.1 1.5 4 3 5.5l7 7Z"/></symbol>
+    <symbol id="i-cloud" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 0 0 0-9 6 6 0 0 0-11.6-1.5A4 4 0 0 0 6 19z"/></symbol>
+    <symbol id="i-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="1"/><path d="M9 22v-4h6v4M8 6h.01M12 6h.01M16 6h.01M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></symbol>
+    <symbol id="i-bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="9" cy="16" r="1"/><circle cx="15" cy="16" r="1"/><path d="M12 7v4M8 3h8"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></symbol>
+    <symbol id="i-broadcast" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M4.9 4.9a10 10 0 0 0 0 14.2M19.1 4.9a10 10 0 0 1 0 14.2M7.8 7.8a6 6 0 0 0 0 8.4M16.2 7.8a6 6 0 0 1 0 8.4"/></symbol>
+    <symbol id="i-plug" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22v-5M9 8V2M15 8V2M18 8v4a6 6 0 0 1-12 0V8Z"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21a6 6 0 0 0-12 0"/><circle cx="10" cy="8" r="4"/><path d="M22 21a6 6 0 0 0-4-5.6"/><path d="M16 3.1a4 4 0 0 1 0 7.7"/></symbol>
+    <symbol id="i-heartbeat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-6 4 12 2-6h6"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></symbol>
+    <symbol id="i-monitor" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 2-9.6 9.6M15.5 7.5 18 10"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-rocket" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.3-2 5-2 5s3.7-.5 5-2c.7-.8.7-2 0-2.8a2 2 0 0 0-3 .3zM12 15l-3-3a22 22 0 0 1 8-10c1.6 0 3 1.4 3 3a22 22 0 0 1-10 8zM9 12H4l3-3h3M12 15v5l3-3v-3"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol>
+    <symbol id="i-gamepad" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h4M8 10v4M15 13h.01M18 11h.01"/><rect x="2" y="6" width="20" height="12" rx="4"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
+    <symbol id="i-message" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+    <symbol id="i-package" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.3 9 5.2M21 8v8a2 2 0 0 1-1 1.7l-7 4a2 2 0 0 1-2 0l-7-4A2 2 0 0 1 3 16V8a2 2 0 0 1 1-1.7l7-4a2 2 0 0 1 2 0l7 4A2 2 0 0 1 21 8z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></symbol>
+    <symbol id="i-ban" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></symbol>
+    <symbol id="i-arrow-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
+    <symbol id="i-github" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.5v-1.7c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.5 18.3 4.8 18.3 4.8c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.6.8.5 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></symbol>
+    <symbol id="i-terminal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 17 6-6-6-6M12 19h8"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M3 6h18M3 18h18"/></symbol>
+  </defs>
+</svg>
+  <nav class="top-nav">
+    <div class="nav-brand"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg>️ mona.expert</div>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="overview.html">Overview</a>
+      <a href="agents.html" class="active">Agents</a>
+    </div>
+    <div class="nav-status">
+      <span class="connection-dot" id="navConnectionDot"></span>
+      <span class="badge badge-version" id="navStatus">Connecting…</span>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 2rem 1rem;">
+      <h1 style="margin:0;">Agent Marketplace</h1>
+      <p style="color: var(--text-dim, #888); margin-top: 0.25rem;">Browse, install, and manage AI agents. Mona contains and audits every agent.</p>
+
+      <div class="summary-bar" id="summary"></div>
+
+      <div class="filters" id="filterBar">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="installed">Installed</button>
+        <button class="filter-btn" data-filter="running">Running</button>
+        <button class="filter-btn" data-filter="not_installed">Available</button>
+        <span style="flex:1"></span>
+        <span id="lastUpdated" style="font-size:0.75rem; color:var(--text-dim,#555);"></span>
+      </div>
+
+      <div id="agentsContainer">
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <div>Loading agents…</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script type="module">
+    const AGENTS_API = '/api/agents';
+
+    let agents = [];
+    let filter = 'all';
+    let eventSource = null;
+
+    const container = document.getElementById('agentsContainer');
+    const summaryEl = document.getElementById('summary');
+    const toastEl = document.getElementById('toast');
+
+    function showToast(message, type = 'success') {
+      toastEl.textContent = message;
+      toastEl.className = `toast ${type} show`;
+      setTimeout(() => toastEl.classList.remove('show'), 3000);
+    }
+
+    function statusBadgeHtml(status) {
+      const cls = status === 'running' ? 'badge-running'
+        : status === 'installed' ? 'badge-installed'
+        : status === 'stopped' ? 'badge-stopped'
+        : status === 'error' ? 'badge-error'
+        : 'badge-not-installed';
+      return `<span class="badge ${cls}">${status.replace('_', ' ')}</span>`;
+    }
+
+    function safetyBadgeHtml(rating) {
+      const cls = `badge-safety-${rating || 'unknown'}`;
+      return `<span class="badge ${cls}">${rating || 'unknown'}</span>`;
+    }
+
+    function permHtml(val) { return val ? '<svg class="ico ico-success" aria-hidden="true"><use href="#i-check"/></svg>' : '<svg class="ico ico-danger" aria-hidden="true"><use href="#i-x"/></svg>'; }
+
+    function renderAgents() {
+      const filtered = filter === 'all' ? agents
+        : filter === 'installed' ? agents.filter(a => a.installed)
+        : filter === 'running' ? agents.filter(a => a.status === 'running')
+        : filter === 'not_installed' ? agents.filter(a => !a.installed)
+        : agents;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="icon"><svg class="ico" aria-hidden="true"><use href="#i-package"/></svg></div>
+            <div>No agents match this filter.</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(agent => `
+        <div class="agent-card">
+          <div class="agent-header">
+            <div>
+              <h3 class="agent-name">${escHtml(agent.name)}</h3>
+              <p class="agent-tagline">${escHtml(agent.tagline || '')}</p>
+            </div>
+            ${statusBadgeHtml(agent.status || 'not_installed')}
+          </div>
+
+          <p class="agent-description">${escHtml(agent.description || 'No description')}</p>
+
+          <div class="agent-meta">
+            <span class="badge badge-provider">${agent.provider?.name || 'Unknown'}</span>
+            ${safetyBadgeHtml(agent.safety?.rating)}
+            ${agent.installed ? `<span class="badge badge-installed">v${agent.version || '?'}</span>` : ''}
+          </div>
+
+          <div class="agent-permissions">
+            <span class="perm-tag ${agent.permissions?.files?.read ? 'enabled' : 'disabled'}">files.read ${permHtml(agent.permissions?.files?.read)}</span>
+            <span class="perm-tag ${agent.permissions?.files?.write ? 'enabled' : 'disabled'}">files.write ${permHtml(agent.permissions?.files?.write)}</span>
+            <span class="perm-tag ${agent.permissions?.shell ? 'enabled' : 'disabled'}">shell ${permHtml(agent.permissions?.shell)}</span>
+            <span class="perm-tag ${agent.permissions?.network?.outbound ? 'enabled' : 'disabled'}">net.out ${permHtml(agent.permissions?.network?.outbound)}</span>
+          </div>
+
+          <div class="agent-tags">
+            ${(agent.tags || []).map(t => `<span class="tag">${escHtml(t)}</span>`).join('')}
+          </div>
+
+          <div class="agent-actions">
+            ${!agent.installed ? `
+              <button class="btn btn-install" onclick="doAction('${agent.id}','install')">Install</button>
+            ` : `
+              <button class="btn btn-start" onclick="doAction('${agent.id}','start')" ${agent.status === 'running' ? 'disabled' : ''}>Start</button>
+              <button class="btn btn-stop" onclick="doAction('${agent.id}','stop')" ${agent.status !== 'running' ? 'disabled' : ''}>Stop</button>
+              <span class="spacer"></span>
+              <button class="btn btn-danger" onclick="doAction('${agent.id}','uninstall')">Uninstall</button>
+            `}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderSummary() {
+      const total = agents.length;
+      const installed = agents.filter(a => a.installed).length;
+      const running = agents.filter(a => a.status === 'running').length;
+      summaryEl.innerHTML = `
+        <div class="summary-stat"><strong>${total}</strong> <span>agents</span></div>
+        <div class="summary-stat"><strong>${installed}</strong> <span>installed</span></div>
+        <div class="summary-stat"><strong>${running}</strong> <span>running</span></div>
+      `;
+    }
+
+    function escHtml(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    async function loadAgents() {
+      try {
+        const res = await fetch(AGENTS_API);
+        const data = await res.json();
+        if (data.ok && Array.isArray(data.agents)) {
+          agents = data.agents;
+        } else {
+          agents = [];
+        }
+      } catch (err) {
+        agents = [];
+        console.error('Failed to load agents:', err);
+      }
+      renderSummary();
+      renderAgents();
+      document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+    }
+
+    window.doAction = async function(agentId, action) {
+      const card = event?.target?.closest?.('.agent-card');
+      if (card) card.style.opacity = '0.6';
+
+      try {
+        const res = await fetch(`${AGENTS_API}/${agentId}/${action}`, { method: 'POST' });
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'Request failed');
+
+        const msg = action === 'install' ? `Installed ${data.agent?.name || agentId}`
+          : action === 'uninstall' ? `Uninstalled ${data.agent?.name || agentId}`
+          : action === 'start' ? `Started ${agentId}`
+          : action === 'stop' ? `Stopped ${agentId}`
+          : `Done`;
+        showToast(msg, 'success');
+
+        await loadAgents();
+      } catch (err) {
+        showToast(err.message, 'error');
+        console.error('Action failed:', err);
+      }
+
+      if (card) card.style.opacity = '1';
+    };
+
+    // Filter buttons
+    document.getElementById('filterBar').addEventListener('click', (e) => {
+      const btn = e.target.closest('.filter-btn');
+      if (!btn || !btn.dataset.filter) return;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filter = btn.dataset.filter;
+      renderAgents();
+    });
+
+    // SSE for live updates
+    function connectSse() {
+      if (eventSource) eventSource.close();
+      eventSource = new EventSource('/api/live');
+      eventSource.addEventListener('ready', () => {});
+      eventSource.addEventListener('agents-update', () => { loadAgents(); });
+      eventSource.addEventListener('audit', () => { loadAgents(); });
+      eventSource.addEventListener('heartbeat', () => {});
+      eventSource.addEventListener('error', () => {
+        eventSource.close();
+        setTimeout(connectSse, 3000);
+      });
+    }
+
+    // Init
+    await loadAgents();
+    connectSse();
+  </script>
+<footer>
+    <div class="footer-content">
+      <div class="footer-brand"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg>️ mona.expert</div>
+      <div class="footer-links">
+        <a href="./">Home</a> · <a href="dashboard.html">Dashboard</a> · <a href="agents.html">Agents</a> · <a href="overview.html">Overview</a>
+      </div>
+      <span style="color:var(--text-muted); font-size:0.85rem;">Real-time AI agent security wrapper</span>
+    </div>
+  </footer>
+</body>
+</html>

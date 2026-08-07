@@ -1,0 +1,90 @@
+version: "3.8"
+
+# ────────────────────────────────────────────────────────────
+# mona.expert — Docker Compose for Production Deployment
+#
+# Components:
+#   mysql      → MariaDB 10.11 with schema auto-initialized
+#   wrapper    → mona.expert wrapper backend (mTLS, port 4189)
+#   website    → mona.expert public gateway (port 4188)
+#
+# Usage:
+#   docker-compose up -d
+#   docker-compose logs -f
+#
+# Environment: copy .env.example → .env and customize
+# ────────────────────────────────────────────────────────────
+
+services:
+  # ─── MySQL ──────────────────────────────────────────────
+  mysql:
+    image: mariadb:10.11
+    container_name: mona-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-mona_root_secret}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-mona_expert}
+      MYSQL_USER: ${MYSQL_USER:-mona}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-mona_password}
+    ports:
+      - "127.0.0.1:3307:3306"   # exposed on internal 3307 to avoid port clash
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - mona-net
+
+  # ─── Wrapper Backend (mTLS) ────────────────────────────
+  wrapper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mona-wrapper
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      WRAPPER_PORT: 4189
+      MONA_EXPERT_PORT: 4188
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: ${MYSQL_USER:-mona}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-mona_password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-mona_expert}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-}
+      CERTS_DIR: /app/certs
+      DEFAULT_TENANT: default
+    ports:
+      - "127.0.0.1:4189:4189"
+    volumes:
+      - ./certs:/app/certs:ro
+      - mona_agents:/app/.mona-agents
+    networks:
+      - mona-net
+    command: >
+      sh -c "
+        node wrapper-server.js &
+        node website-server.js &
+        wait
+      "
+
+  # ─── Website Gateway (port 4188) ───────────────────────
+  # Handled by the wrapper container's second process.
+  # Scale independently by splitting into separate Dockerfile if needed.
+
+networks:
+  mona-net:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  mona_agents:
