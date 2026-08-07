@@ -154,11 +154,43 @@
 <main>
   <!-- Hero -->
   <section class="hero animate-in">
-    <h1 class="gradient-text">Sichere KI-Agenten.<br>Volle Kontrolle.</h1>
-    <p>mona.expert ist ein sicherer, datenschutzkonformer Wrapper für KI-Agenten — mit mTLS-Verschlüsselung, lückenlosem Audit-Log und eingebautem Prompt Injection Schutz.</p>
+    <div class="hero-eyebrow"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg> Security-Layer für autonome KI</div>
+    <h1 class="gradient-text">KI-Agenten, denen<br>man vertrauen kann.</h1>
+    <p>Autonome Agenten treffen Entscheidungen, rufen Tools auf und verarbeiten sensible Daten — meist ungeprüft. mona.expert legt eine zertifikatsbasierte Sicherheitsschicht dazwischen: <strong>Prompt-Injection-Abwehr</strong>, <strong>mTLS zwischen jeder Komponente</strong> und ein <strong>manipulationssicheres Audit-Log</strong> — selbst hostbar, DSGVO- und EU-AI-Act-orientiert.</p>
     <div class="hero-buttons">
       <a href="register.html" class="btn btn-primary btn-lg">Kostenlos starten</a>
-      <a href="https://github.com/MONAEXPERT/mona.expert" class="btn btn-secondary btn-lg"><svg class="ico" aria-hidden="true"><use href="#i-github"/></svg> GitHub</a>
+      <a href="https://github.com/MONAEXPERT/mona.expert" class="btn btn-secondary btn-lg"><svg class="ico" aria-hidden="true"><use href="#i-github"/></svg> Quellcode ansehen</a>
+    </div>
+    <div class="hero-trust">
+      <span><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg> mTLS end-to-end</span>
+      <span><svg class="ico" aria-hidden="true"><use href="#i-clipboard"/></svg> Hash-verkettetes Audit</span>
+      <span><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg> 100% Open Source</span>
+      <span><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg> 158 Tests</span>
+    </div>
+  </section>
+
+  <!-- Deep-tech story: the trust gap -->
+  <section class="story">
+    <div class="story-head">
+      <h2>Das Vertrauensproblem autonomer KI</h2>
+      <p>Ein LLM-Agent ist so sicher wie die Schicht, die ihn umgibt. Diese Schicht fehlt fast überall.</p>
+    </div>
+    <div class="grid-3">
+      <div class="story-card">
+        <div class="story-num">01</div>
+        <h3>Injection ist real</h3>
+        <p>Eingaben, Tool-Ausgaben und abgerufene Dokumente können den Agenten kapern. Wir prüfen jede Ein- und Ausgabe gegen sieben Angriffsklassen — in Echtzeit, bevor sie das Modell erreicht.</p>
+      </div>
+      <div class="story-card">
+        <div class="story-num">02</div>
+        <h3>Klartext-Transport ist blind</h3>
+        <p>Zwischen App, Gateway und Wrapper fließen Prompts, Keys und Ergebnisse. mTLS mit gegenseitiger Zertifikatsprüfung stellt sicher, dass nur autorisierte Komponenten überhaupt sprechen.</p>
+      </div>
+      <div class="story-card">
+        <div class="story-num">03</div>
+        <h3>Ohne Audit kein Beweis</h3>
+        <p>Jeder Call, jede Entscheidung und jede Blockade wird in einer hash-verketteten Kette protokolliert. Nachträgliche Manipulation fällt sofort auf — Compliance wird prüfbar statt behauptet.</p>
+      </div>
     </div>
   </section>
 
